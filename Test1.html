@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Birthday Card</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Confetti.js -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #ffcc5c;
+            --accent-color: #5cb3ff;
+            --dark-color: #333;
+            --light-color: #fff8e1;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: var(--light-color);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .card-container {
+            perspective: 1000px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .birthday-card {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .birthday-card:hover {
+            transform: rotateY(10deg) rotateX(10deg);
+        }
+        
+        .card-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .card-header img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+        }
+        
+        .card-header h1 {
+            font-size: 2.5rem;
+            color: #d63031;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5px;
+        }
+        
+        .card-header p {
+            font-size: 1.2rem;
+            color: #555;
+        }
+        
+        .decoration {
+            position: absolute;
+            opacity: 0.2;
+        }
+        
+        .decoration-1 {
+            top: 10px;
+            left: 10px;
+            color: var(--primary-color);
+            font-size: 3rem;
+            transform: rotate(-15deg);
+        }
+        
+        .decoration-2 {
+            bottom: 10px;
+            right: 10px;
+            color: var(--secondary-color);
+            font-size: 3rem;
+            transform: rotate(15deg);
+        }
+        
+        .decoration-3 {
+            top: 50%;
+            left: 20px;
+            color: var(--accent-color);
+            font-size: 2rem;
+        }
+        
+        .decoration-4 {
+            top: 30%;
+            right: 20px;
+            color: var(--accent-color);
+            font-size: 2rem;
+        }
+        
+        .message-preview {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            padding: 10px 15px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 107, 107, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 10px;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+            display: inline-block;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .confetti-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .confetti-btn:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .confetti-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .card-header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-header p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body onload="startConfetti()">
+    <div class="container card-container">
+        <div class="birthday-card">
+            <!-- Decorative elements -->
+            <i class="fas fa-birthday-cake decoration decoration-1"></i>
+            <i class="fas fa-gift decoration decoration-2"></i>
+            <i class="fas fa-heart decoration decoration-3"></i>
+            <i class="fas fa-star decoration decoration-4"></i>
+            
+            <div class="card-header">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/9b9c5a40-17d2-44b4-9e8e-c8293d1f61b7.png" alt="Happy birthday celebration with colorful balloons and cake" class="floating">
+                <h1 class="pulse">Happy Birthday!</h1>
+            </div>
+            
+    
+            
+            <form id="birthdayForm">
+                <div class="mb-3">
+                    <label for="senderName" class="form-label">Your Name</label>
+                    <input type="text" class="form-control" id="senderName" placeholder="Minh An">
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Your Message</label>
+                    <textarea class="form-control" id="message" rows="3" placeholder="Happy Birthday to you, I wish you good luck, success in your studies, and better learning"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="cardTheme" class="form-label">Card Theme</label>
+                    <select class="form-select" id="cardTheme">
+                        <option value="default">Default (Pink Gradient)</option>
+                        <option value="blue">Blue Ocean</option>
+                        <option value="gold">Golden Celebration</option>
+                        <option value="purple">Purple Dream</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-primary" onclick="resetForm()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                    <button type="button" class="btn btn-primary confetti-btn" onclick="updatePreview()">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button type="button" class="btn btn-primary confetti-btn" onclick="generateCard()">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize confetti animation
+        function startConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            
+            // Continue small bursts of confetti
+            setInterval(() => {
+                confetti({
+                    particleCount: 20,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+            }, 5000);
+        }
+        
+        // Update the preview in real-time
+        function updatePreview() {
+            const message = document.getElementById('message').value || 'Your message will appear here...';
+            const senderName = document.getElementById('senderName').value || '';
+            
+            document.getElementById('previewText').innerHTML = message.replace(/\n/g, '<br>');
+            document.getElementById('previewSignature').textContent = senderName ? `With love, ${senderName}` : '';
+            
+            // Small confetti burst on update
+            confetti({
+                particleCount: 30,
+                spread: 50,
+                origin: { y: 0.6 }
+            });
+        }
+        
+        // Change card theme
+        document.getElementById('cardTheme').addEventListener('change', function() {
+            const card = document.querySelector('.birthday-card');
+            const colors = {
+                'default': ['#ff9a9e', '#fad0c4'],
+                'blue': ['#a1c4fd', '#c2e9fb'],
+                'gold': ['#f6d365', '#fda085'],
+                'purple': ['#c9c9ff', '#e0c3fc']
+            };
+            
+            card.style.background = `linear-gradient(135deg, ${colors[this.value][0]} 0%, ${colors[this.value][1]} 100%)`;
+        });
+        
+        // Reset form
+        function resetForm() {
+            document.getElementById('birthdayForm').reset();
+            document.getElementById('previewText').textContent = 'Your message will appear here...';
+            document.getElementById('previewSignature').textContent = '';
+        }
+        
+        // Generate shareable card
+        function generateCard() {
+            updatePreview();
+            
+            // Simulate sharing functionality
+            const message = document.getElementById('message').value;
+            const senderName = document.getElementById('senderName').value;
+            
+            if (!message || !senderName) {
+                alert('Please fill in both your name and message before sharing!');
+                return;
+            }
+            
+            // Big confetti celebration
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                }, i * 200);
+            }
+            
+            alert('Card generated successfully! Imagine this would share your beautiful birthday card.');
+            
+            // In a real implementation, this would generate an image or share link
+            // For this example, we'll just show an alert
+        }
+        
+        // Update preview as user types
+        document.getElementById('message').addEventListener('input', updatePreview);
+        document.getElementById('senderName').addEventListener('input', updatePreview);
+    </script>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
